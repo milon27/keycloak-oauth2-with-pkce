@@ -1,7 +1,9 @@
 import axios from "axios";
 import pkceChallenge from "pkce-challenge";
+import { KeyCloakAxios } from "./axios-keycloak";
 
 export default function App() {
+  // * 1. get the authorization code using code_challenge_method and codeChallenge hash
   const getAuthCode = async () => {
     // generate codeChallenge,codeVerifier
     const code = await pkceChallenge();
@@ -11,6 +13,7 @@ export default function App() {
     );
   };
 
+  // * 1. get the tokens using codeVerifier string
   const getTokens = () => {
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -55,6 +58,7 @@ export default function App() {
       });
   };
 
+  // * access user info
   const getUserInfo = async () => {
     const tokensString = localStorage.getItem("token");
     if (!tokensString) {
@@ -69,7 +73,7 @@ export default function App() {
       "http://localhost:8080/realms/app-realm/protocol/openid-connect/userinfo";
 
     try {
-      const response = await axios.get(userInfoEndpoint, {
+      const response = await KeyCloakAxios.get(userInfoEndpoint, {
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
@@ -77,7 +81,7 @@ export default function App() {
 
       // Extract user information from the response
       const userInfo = response.data;
-      alert(userInfo);
+      alert(JSON.stringify(userInfo, null, 2));
 
       // Handle the user information as needed
     } catch (error) {
